@@ -44,7 +44,6 @@ func AuthMiddleware(jwtManager *JWTManager, next http.Handler) http.Handler {
 		}
 
 		// Добавление userID в context
-		//ctx := context.WithValue(r.Context(), userIDKey, userID)
 		ctx := WithUserID(r.Context(), userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -73,7 +72,6 @@ func OptionalAuthMiddleware(jwtManager *JWTManager, next http.Handler) http.Hand
 		}
 
 		// Добавляем userID в context
-		//ctx := context.WithValue(r.Context(), userIDKey, userID)
 		ctx := WithUserID(r.Context(), userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
