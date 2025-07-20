@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_marketplace
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: marketplace_db
+      POSTGRES_USER: marketplace_user
+      POSTGRES_PASSWORD: marketplace_password
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: marketplace_app
+    depends_on:
+      - postgres
+    env_file:
+    - .env
+    environment:
+      - PORT
+      - JWT_SECRET
+      - DATABASE_DSN
+    ports:
+      - "8080:8080"
+    command: ./app
+
+volumes:
+  postgresql_data:

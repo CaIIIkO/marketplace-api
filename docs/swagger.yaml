@@ -1,0 +1,252 @@
+basePath: /
+definitions:
+  advertisement.Advertisement:
+    properties:
+      author_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      price_kopecks:
+        description: В копейках
+        type: integer
+      title:
+        type: string
+    type: object
+  advertisement.AdvertisementList:
+    properties:
+      author_login:
+        type: string
+      description:
+        type: string
+      image_url:
+        type: string
+      is_owner:
+        description: факт принадлежности объявления авторизованному пользователю
+        type: boolean
+      price_kopecks:
+        type: number
+      title:
+        type: string
+    type: object
+  advertisement.CreateAdvertisementInput:
+    properties:
+      description:
+        type: string
+      image_url:
+        type: string
+      price_kopecks:
+        type: integer
+      title:
+        type: string
+    type: object
+  user.LoginRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  user.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  user.RegisterRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  user.RegisterResponse:
+    properties:
+      id:
+        type: string
+      login:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: chirkov.a.y@yandex.ru
+    name: Chirkov Alexandr
+    url: https://t.me/CAIIIKO0
+  description: API для маркетплейса — регистрация, авторизация и объявления (Тестовое
+    задание для https://internship.vk.company/vacancy/1146)
+  title: Marketplace API
+  version: "1.0"
+paths:
+  /advertisement:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новое объявление от авторизованного пользователя
+      parameters:
+      - description: Данные объявления
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/advertisement.CreateAdvertisementInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/advertisement.Advertisement'
+        "400":
+          description: Неверный ввод или обязательные поля пусты
+          schema:
+            type: string
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            type: string
+        "405":
+          description: Метод не разрешён
+          schema:
+            type: string
+      security:
+      - AuthToken: []
+      summary: Создать объявление
+      tags:
+      - advertisement
+  /advertisement/:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список объявлений с возможностью фильтрации и сортировки
+        (если пользователь авторизован добавляет параметр is_owner к ответу)
+      parameters:
+      - default: 1
+        description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Количество элементов на странице
+        in: query
+        name: limit
+        type: integer
+      - default: created_at
+        description: Поле для сортировки (created_at, price)
+        in: query
+        name: sort_by
+        type: string
+      - default: desc
+        description: Направление сортировки (asc, desc)
+        in: query
+        name: sort_direction
+        type: string
+      - default: 0
+        description: Минимальная цена в копейках
+        in: query
+        name: min_price_kopecks
+        type: integer
+      - default: 0
+        description: Максимальная цена в копейках
+        in: query
+        name: max_price_kopecks
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/advertisement.AdvertisementList'
+            type: array
+        "400":
+          description: Некорректные параметры запроса
+          schema:
+            type: string
+        "405":
+          description: Метод не разрешён
+          schema:
+            type: string
+      security:
+      - AuthToken: []
+      summary: Получить список объявлений
+      tags:
+      - advertisement
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Принимает email и пароль, возвращает JWT-токен
+      parameters:
+      - description: Данные для аунтификации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/user.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.LoginResponse'
+        "400":
+          description: Неверный ввод
+          schema:
+            type: string
+        "401":
+          description: Неавторизован
+          schema:
+            type: string
+        "405":
+          description: Метод не разрешён
+          schema:
+            type: string
+      summary: Аунтификация пользователя
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Принимает данные пользователя и создаёт новую учётную запись
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/user.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/user.RegisterResponse'
+        "400":
+          description: Неверный ввод
+          schema:
+            type: string
+        "405":
+          description: Метод не разрешён
+          schema:
+            type: string
+      summary: Регистрация нового пользователя
+      tags:
+      - auth
+schemes:
+- http
+securityDefinitions:
+  AuthToken:
+    description: Введите JWT токен с префиксом Bearer
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
